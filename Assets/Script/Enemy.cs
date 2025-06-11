@@ -21,6 +21,7 @@ public class Enemy : MonoBehaviour
     {
         currentHP = maxHP;
     }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Cookie"))
@@ -29,10 +30,32 @@ public class Enemy : MonoBehaviour
             Destroy(collision.gameObject); //ÄíÅ° Á¦°Å
             currentHP -= Player.instance.nowDMG;
         }
+        else if (collision.gameObject.CompareTag("Enemy Move Limit"))
+        {
+            if (spr.flipX == false)
+            {
+                spr.flipX = true;
+            } 
+            else
+            {
+                spr.flipX = false;
+            }
+                
+        }
+
     }
     private void Update()
     {
-        if(currentHP <= 0)
+        if (spr.flipX == false)
+        {
+            this.transform.position += Vector3.right * Time.deltaTime * 2f;
+        }
+        else
+        {
+            this.transform.position += Vector3.left * Time.deltaTime * 2f;
+        }
+        
+        if (currentHP <= 0)
         {
             Destroy(gameObject);
         }

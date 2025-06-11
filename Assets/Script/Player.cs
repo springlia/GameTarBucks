@@ -6,25 +6,20 @@ using UnityEngine.UIElements;
 public class Player : MonoBehaviour
 {
     public static Player instance;
+    public Vector3 dir = Vector3.zero;
 
+    [Header("스킬 정보")]
     public bool isFire;
     public bool isIce;
     bool isSkillDoneTime;
 
-    public Vector3 dir = Vector3.zero;
-    [SerializeField] float speed = 5f;
-    [SerializeField] float jumpForce = 5f; 
-    bool isGrounded = true;
-    [SerializeField] bool isCloud;
-    Rigidbody2D rb;
-    public SpriteRenderer spr;
+    [Header("쿠키 정보")]
     [SerializeField] GameObject originalCookie;
-
     public Cookie cookie;  
     public float throwForce = 10f;
 
     [Header("플레이어 정보")]
-    [SerializeField] int nowHP;
+    public int nowHP;
     int cloudHP = 120;
     int seoilHP = 100;
 
@@ -34,6 +29,12 @@ public class Player : MonoBehaviour
 
     [SerializeField] int currentCookie = 0;
 
+    [SerializeField] float speed = 5f;
+    [SerializeField] float jumpForce = 5f;
+    bool isGrounded = true;
+    public bool isCloud;
+    Rigidbody2D rb;
+    public SpriteRenderer spr;
 
     private void Awake()
     {
@@ -44,23 +45,22 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        dir.x = Input.GetAxis("Horizontal");
+        dir.x = Input.GetAxis("Horizontal"); //이동
+        this.transform.position += dir * Time.deltaTime * speed;
 
-        if(Input.GetButtonDown("Horizontal"))
+        if (Input.GetButtonDown("Horizontal")) //캐릭터 좌우반전
         {
             spr.flipX = Input.GetAxisRaw("Horizontal") == -1;
         }
 
-        this.transform.position += dir * Time.deltaTime * speed;
-
-        if (Input.GetKeyDown(KeyCode.LeftShift) && currentCookie > 0)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && currentCookie > 0) //기본공격
         {
             Instantiate(originalCookie, this.transform.position, Quaternion.identity);
             currentCookie--;
             
         }
 
-        if (Input.GetKey(KeyCode.Space) && isGrounded)
+        if (Input.GetKey(KeyCode.Space) && isGrounded) //점프
         {
             rb.AddForce(Vector3.up * jumpForce);
             isGrounded = false;
@@ -71,7 +71,7 @@ public class Player : MonoBehaviour
             StartCoroutine(SkillDone());
         }
 
-        if(Input.GetKeyDown(KeyCode.Q))
+        if(Input.GetKeyDown(KeyCode.Q)) //서일 구름 변환
         {
             if(isCloud) //서일화
             {
@@ -95,22 +95,32 @@ public class Player : MonoBehaviour
     }
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
+        if (collision.gameObject.CompareTag("Ground")) //점프 초기화
         {
             isGrounded = true;
         }
-        
+        else if (collision.gameObject.CompareTag("Enemy")) //공격 받음
+        {
+            nowHP -= 10;
+            Vector3 targetPos = collision.transform.position;
+            int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1;
+            rb.AddForce(new Vector2(dirc, 1) * 5, ForceMode2D.Impulse);
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("PlusCookie"))
+        if (collision.gameObject.CompareTag("PlusCookie")) //쿠키 증가
         {
             currentCookie++;
             Destroy(collision.gameObject);
         }
-    }
+        else if (collision.gameObject.CompareTag("Skill Store")) //스킬 UI 오픈
+        {
+            GameManager.instance2.SkillUIOpen();
+        }
 
+    }
     IEnumerator SkillNormal()
     {
         Instantiate(originalCookie, this.transform.position, Quaternion.identity);

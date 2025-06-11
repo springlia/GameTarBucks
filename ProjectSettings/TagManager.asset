@@ -7,6 +7,9 @@ TagManager:
   - Ground
   - PlusCookie
   - Cookie
+  - Enemy Move Limit
+  - Enemy
+  - Skill Store
   layers:
   - Default
   - TransparentFX
