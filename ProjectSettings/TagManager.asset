@@ -10,6 +10,8 @@ TagManager:
   - Enemy Move Limit
   - Enemy
   - Skill Store
+  - Clear
+  - void
   layers:
   - Default
   - TransparentFX

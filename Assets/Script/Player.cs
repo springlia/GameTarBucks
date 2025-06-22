@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using TMPro;
 
 public class Player : MonoBehaviour
 {
@@ -36,6 +37,11 @@ public class Player : MonoBehaviour
     Rigidbody2D rb;
     public SpriteRenderer spr;
 
+    public float score;
+    [SerializeField] TextMeshProUGUI scoreText;
+
+    [SerializeField] TextMeshProUGUI ClearMsg;
+
     private void Awake()
     {
         instance = this;
@@ -47,6 +53,7 @@ public class Player : MonoBehaviour
     {
         dir.x = Input.GetAxis("Horizontal"); //이동
         this.transform.position += dir * Time.deltaTime * speed;
+        scoreText.text = score.ToString();
 
         if (Input.GetButtonDown("Horizontal")) //캐릭터 좌우반전
         {
@@ -76,7 +83,7 @@ public class Player : MonoBehaviour
             if(isCloud) //서일화
             {
                 isCloud = false;
-                spr.color = Color.red;
+                spr.color = Color.gray;
 
                 cloudHP = nowHP;
                 nowHP = seoilHP;
@@ -101,10 +108,19 @@ public class Player : MonoBehaviour
         }
         else if (collision.gameObject.CompareTag("Enemy")) //공격 받음
         {
+            StartCoroutine(GetDamage());
             nowHP -= 10;
             Vector3 targetPos = collision.transform.position;
             int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1;
             rb.AddForce(new Vector2(dirc, 1) * 5, ForceMode2D.Impulse);
+
+            if (nowHP <= 0)
+            {
+                nowHP = 0;
+                ClearMsg.text = "Fail ...".ToString();
+                ClearMsg.gameObject.SetActive(true);
+                Time.timeScale = 0;
+            }
         }
     }
 
@@ -119,13 +135,33 @@ public class Player : MonoBehaviour
         {
             GameManager.instance2.SkillUIOpen();
         }
+        else if (collision.gameObject.CompareTag("Clear"))
+        {
+            ClearMsg.gameObject.SetActive(true);
+            Time.timeScale = 0;
+        }
+        else if (collision.gameObject.CompareTag("void"))
+        {
+            this.transform.position = new Vector3(0f, -3.18f, 0f);
 
+            nowHP -= 10;
+        }
     }
     IEnumerator SkillNormal()
     {
         Instantiate(originalCookie, this.transform.position, Quaternion.identity);
         yield return new WaitForSecondsRealtime(0.3f);
         Instantiate(originalCookie, this.transform.position, Quaternion.identity);
+    }
+
+    IEnumerator GetDamage()
+    {
+        spr.color = Color.red;
+        yield return new WaitForSecondsRealtime(0.3f);
+        if (isCloud)
+            spr.color = Color.white;
+        else
+            spr.color = Color.gray;
     }
 
     IEnumerator SkillNyam()

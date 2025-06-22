@@ -48,15 +48,16 @@ public class Enemy : MonoBehaviour
     {
         if (spr.flipX == false)
         {
-            this.transform.position += Vector3.right * Time.deltaTime * 2f;
+            this.transform.position += Vector3.left * Time.deltaTime * 2f;
         }
         else
         {
-            this.transform.position += Vector3.left * Time.deltaTime * 2f;
+            this.transform.position += Vector3.right * Time.deltaTime * 2f;
         }
         
         if (currentHP <= 0)
         {
+            Player.instance.score += 1;
             Destroy(gameObject);
         }
     }
